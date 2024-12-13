@@ -1,0 +1,25 @@
+{% extends 'productos/base.html' %}
+{% load tz %} <!-- si requieres filtros de timezone, opcional -->
+
+{% block content %}
+<h1>Comparación de Ventas por Mes (Últimos 12 Meses)</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mes</th>
+            <th>Total de Ventas</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dato in ventas_por_mes %}
+        <tr>
+            <td>{{ dato.mes|date:"F Y" }}</td>
+            <td>${{ dato.total_mes }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Si quieres comparar visualmente, podrías incluir gráficos con Chart.js u otra librería -->
+{% endblock %}

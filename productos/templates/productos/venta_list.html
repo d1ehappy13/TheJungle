@@ -1,0 +1,21 @@
+{% extends 'productos/base.html' %}
+{% block content %}
+<h1 class="mb-4">Ventas Registradas</h1>
+<a href="{% url 'crear_venta' %}" class="btn btn-success mb-3">Registrar nueva venta</a>
+
+<div class="list-group">
+    {% for venta in ventas %}
+        <div class="list-group-item">
+            <h5>Boleta: {{ venta.numero_boleta }} - Fecha: {{ venta.fecha|date:"d/m/Y H:i" }}</h5>
+            <p>Total: ${{ venta.total }}</p>
+            <ul class="list-unstyled">
+                {% for detalle in venta.detalles.all %}
+                    <li>{{ detalle.producto.nombre }} x {{ detalle.cantidad }} = ${{ detalle.subtotal }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% empty %}
+        <p>No hay ventas registradas aún.</p>
+    {% endfor %}
+</div>
+{% endblock %}

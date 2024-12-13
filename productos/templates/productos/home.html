@@ -1,0 +1,12 @@
+{% extends 'productos/base.html' %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="my-4">Bienvenido a TheJungle</h1>
+    <p class="lead">Desde aquí puedes navegar a:</p>
+    <ul class="list-unstyled">
+        <li><a href="{% url 'producto_list' %}" class="btn btn-primary me-2 my-2">Gestión de Productos</a></li>
+        <li><a href="{% url 'venta_list' %}" class="btn btn-secondary my-2">Gestión de Ventas</a></li>
+    </ul>
+</div>
+{% endblock %}

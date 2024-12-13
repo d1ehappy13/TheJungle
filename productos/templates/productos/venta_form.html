@@ -1,0 +1,127 @@
+{% extends 'productos/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1 class="mb-4">Registrar Venta</h1>
+
+<form method="post" class="row g-3" id="venta-form">
+    {% csrf_token %}
+    <div class="col-12">
+        <h2>Datos de la venta</h2>
+        {{ venta_form.as_p }}
+    </div>
+
+    <div class="col-12">
+        <h2>Detalle de la venta</h2>
+
+        <table class="table" id="detalle-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                <tr class="detalle-row">
+                    <td>{{ form.producto }}</td>
+                    <td>{{ form.cantidad }}</td>
+                    <td class="precio-unitario"></td>
+                    <td class="subtotal"></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm remove-row">X</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-secondary" id="add-row">Agregar otro producto</button>
+    </div>
+
+    <div class="col-12 text-end">
+        <h3>Total: $<span id="total-venta">0</span></h3>
+    </div>
+
+    {{ formset.management_form }}
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Guardar Venta</button>
+        <a href="{% url 'venta_list' %}" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+</form>
+
+<script>
+  // Generar el diccionario con precios de los productos
+  const productPrices = {
+      {% for p in productos %}
+      "{{ p.pk }}": {{ p.precio }}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+  };
+
+  // Aquí el resto del código JS que ya tenías para updateTotals, add-row, etc.
+  document.addEventListener('DOMContentLoaded', function() {
+      const detalleTable = document.getElementById('detalle-table');
+      const totalVenta = document.getElementById('total-venta');
+      const addRowButton = document.getElementById('add-row');
+      const formCount = document.getElementById('id_form-TOTAL_FORMS');
+
+      function updateTotals() {
+          let total = 0;
+          detalleTable.querySelectorAll('.detalle-row').forEach(row => {
+              const productoSelect = row.querySelector('select[name$="-producto"]');
+              const cantidadInput = row.querySelector('input[name$="-cantidad"]');
+              const precioCell = row.querySelector('.precio-unitario');
+              const subtotalCell = row.querySelector('.subtotal');
+
+              const productoId = productoSelect.value;
+              const cantidad = parseInt(cantidadInput.value) || 0;
+              const precio = productPrices[productoId] || 0;
+              const subtotal = cantidad * precio;
+
+              precioCell.textContent = precio > 0 ? "$" + precio : "";
+              subtotalCell.textContent = subtotal > 0 ? "$" + subtotal : "";
+              total += subtotal;
+          });
+          totalVenta.textContent = total;
+      }
+
+      detalleTable.addEventListener('change', updateTotals);
+      detalleTable.addEventListener('keyup', updateTotals);
+
+      addRowButton.addEventListener('click', function() {
+          const formIndex = parseInt(formCount.value);
+          const newRow = document.createElement('tr');
+          newRow.classList.add('detalle-row');
+          newRow.innerHTML = `
+              <td><select name="form-${formIndex}-producto" class="form-control" required>
+                  <option value="">---------</option>
+                  {% for p in productos %}
+                  <option value="{{ p.pk }}">{{ p.nombre }}</option>
+                  {% endfor %}
+              </select></td>
+              <td><input type="number" name="form-${formIndex}-cantidad" class="form-control" min="1" value="1" required></td>
+              <td class="precio-unitario"></td>
+              <td class="subtotal"></td>
+              <td><button type="button" class="btn btn-danger btn-sm remove-row">X</button></td>
+          `;
+          detalleTable.querySelector('tbody').appendChild(newRow);
+          formCount.value = formIndex + 1;
+          updateTotals();
+      });
+
+      detalleTable.addEventListener('click', function(e) {
+          if (e.target.classList.contains('remove-row')) {
+              const row = e.target.closest('tr');
+              row.remove();
+              updateTotals();
+          }
+      });
+
+      updateTotals();
+  });
+</script>
+
+{% endblock %}
